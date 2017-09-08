@@ -7,7 +7,7 @@ VERSION := 0.1.0-SNAPSHOT
 RELEASE_NAME := flatbush
 REPO_SITE = https://github.com/gavinmbell/$(PROJECT)
 ORGANIZATION := Hubrick
-
+DATA_DIR ?= resources
 LEIN := ./bin/lein
 PROFILE := user
 
