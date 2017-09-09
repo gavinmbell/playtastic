@@ -1,6 +1,6 @@
 # playtastic
 
-A [Clojure](https://clojure.org/) library designed to meet the requirements of the task prescribed.  Please see the [discussion](doc/discussion.md) write-up to get an understanding of the design and rationale behind the code.
+[Playtastic](https://github.com/gavinmbell/playtastic) is a [Clojure](https://clojure.org/) library designed to meet the requirements of the task prescribed.  Please see the [discussion](doc/discussion.md) ([or here](https://github.com/gavinmbell/playtastic/blob/master/doc/discussion.md)) write-up to get an understanding of the design and rationale behind the code.
 
 ## Prerequisites
 
@@ -152,7 +152,7 @@ Reports must be generated in a comma separated format with header columns.
 
  This code was written in [Clojure](https://clojure.org/).  The
  corresponding Java *8* code would be similar, using the <i>stream</i>
- facility.
+ facility. (A Java 8 tutorial for this can be found [here](https://docs.oracle.com/javase/tutorial/collections/streams/reduction.html))
 
 
 ## License

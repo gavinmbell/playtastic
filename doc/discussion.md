@@ -23,10 +23,11 @@ Each of the statistical operations are implemented namely; `average`, `mean` and
 * [Query functions](https://github.com/gavinmbell/playtastic/blob/master/src/playtastic/core.clj#L144-L177)
 
 These functions directly manipulate the main data structure and apply
-operations against the data therein.  The shape of the mechanics is
-coded here.  The basic share is... group data by some criteria, and
-then within that group apply a statistical function to get aggregated
-information.
+operations against the data therein.  The shape of the computation is
+coded in `op-onto-field-by-group` function.  The basic shape is as
+follows. First <b>group</b> data <b>by</b> some criteria, and then for
+the data associated with each group apply a statistical function that
+results in aggregated information. (i.e. `group-by` -> `map` -> `filter`)
 
 ``` clojure
 [data operation-fn field-key group-key & {:keys [operation-fn-label field-key-label group-key-label] :or
@@ -96,34 +97,53 @@ running function](https://github.com/gavinmbell/playtastic/blob/master/src/playt
 
 There are functions for overall realoading the data files and clearing the data out from the built state.
 
-## Points of note:
+## Points of note: The Good :smile:, The Bad :unamused:, The Ugly ::japanese_ogre: ...
 
-There is a conspicuous lack of testing code here, mea culpa.  I just
-didn't have time to make meaningful tests.  It is not clear to me what
-the testing suite would look like for this simple program.
+### The Bad :unamused:
 
-I chose to represent each file in a map datastructure that is not
-limited to the scope of a function but is present throughout the
-namespace.  Global scope references held in `atoms`.
+There is a conspicuous lack of testing code here, mea culpa :-(.  I
+just didn't have time to make meaningful tests out side of my REPL
+testing (which admittedly is not <i>really</i> testing).  It is not clear to me what the
+testing suite would look like for this simple program.
 
-Also the separation
-between the mechanics / manipulations of data is something that made
-this code more portable and modular.  The statistic functions have no
-coupling with how they are used.  Also the mechanics being performed
-is captured, such that each group, and operations on that group, are
-separated.
+### The Ugly :japanese_ogre:
+
+* There is [one place](https://github.com/gavinmbell/playtastic/blob/master/src/playtastic/core.clj#L186-L187) where the <i>filter</i> operation is being used that throws an exception when the group-by function is not a <i>keyword</i>
+
+* We are doing mathematic operations on money so a money library like [Joda Money](http://www.joda.org/joda-money/) should probably be used.
+
+* I could do a fancier job with handling of command line args (but that would be a bit overkill regarding the task at hand)
+
+<i>I kept all the code in one source file for readability. Ideally I would have broken it out.</i>
+
+### The Good :smile:
+
+The layout of the code is cogent.  When structuring the constructs for
+this task I chose to represent each bit of information as described in
+the data files as a separate persistent data structuresthat are
+wrapped in `atoms` in the namespace (pardon the Clojure speak). The
+employee information is denormalized by resolving the join keys. The
+resulting table is the basis for all the manipulations that take place
+in the project.
+
+There is a separation between the mechanics of data manipulation (processing) and the
+data representation, this is something that makes this code more portable and
+modular and flexible.  The statistic functions have no coupling with how they are
+used.  Also the mechanics being performed is captured, such that each
+group, and operations on that group, are separated.
 
 One interesting bit was how to represent (and label) the output data.
 There is a small amount of <i>presentation</i> code in the processing
-function.  It needs to be there to create the right keys to label the
+function.  It needs to be there to create good keys to label the
 output (the headers).  There are optional <i>keyword arguments</i>
 that are provided to allow the caller to specify what the headings
 will be.
 
 Both the data manipulation and the writing out to file are done via
-<i>lazy sequences</i> both fuctions are <i>threaded</i> into each other
-to compose the final shape of how these parts of the program are
-constructed.
+<i>lazy sequences</i>. Functions are
+[<i>threaded</i>](https://clojuredocs.org/clojure.core/-%3E) into each
+other to <i>compose</i> the final shape of how these parts of the
+program are constructed.
 
 ``` clojure
 (-> (median-age-by-dept) (capture-to-file "employee-age-by-department.csv") table))
@@ -131,18 +151,72 @@ constructed.
 
 ## Efficiency
 
-The code takes care to make use of vectors and maps for fast O(1) lookups.  Lazy sequenes are used to limit memory consumption.  Only what <u>needs</u> to be in the iteration loop is done.
+:smile: The code takes care to make use of vectors and maps for fast O(1)
+lookups.  Lazy sequences are used to limit memory consumption.  And,
+iterative code has only what <u>needs</u> to be in the iteration
+present.
 
-There is a fair amount of exception handling as there is a malformed number present in the data and a null field (referencing a non-exisent department #8 (?).
+There is a fair amount of defensive coding as there is a malformed
+number present in the data and a null field referencing a non-exisent
+department (#8?).  :japanese_ogre: I could look at addressing some of
+these issues without using exception handling, as exceptions are
+expensive.
 
-## Makefile!? What? ;-)
+## Makefile!? What? :wink:
 
-I like to use `make` as the lowest common denominator build tool.  I use the Makefile to generate the clojure `project.clj` file from a template (nothing fancy, juuuust enough - using `sed`.  This means that there is only one place for specifying information about the project. The make targets essentially delegate to [leiningen](https://leiningen.org/).  Also the latest `lein` script is in the bin directory of this project and referenced in the Makefile.  With make as the base, we can support other languages build artifacts using it in the situation of a polyglot environment.  The Makefile also runs the code. <i>(there is an interesting issue where the JVM does not immediately exit but hangs there for 30 seconds, not sure why just yet, but smells like a thread got launched off that has to time out Hmmmm....)</i>
+I know... I know... but... it is a
+[good](https://www.merriam-webster.com/dictionary/good) thing to use
+`make` as the lowest common denominator build tool.  I use the
+Makefile to generate the clojure `project.clj` file from a simple
+[template](https://raw.githubusercontent.com/gavinmbell/playtastic/master/etc/project.clj.tmpl)
+(nothing fancy, juuuust enough - using `sed`.  This means that there
+is only one place for specifying information about the project. The
+`make` targets essentially delegate to
+[leiningen](https://leiningen.org/).  Also the latest `lein` script is
+in the bin directory of this project and referenced in the Makefile.
+With `make` as the base, we can support other languages' build tools
+similarly to the `make` <-> `lein` interaction here.  Using `make` is
+worthwhile in the context of a polyglot environment.  It provides a
+stable <i>iterface</i> that CI/CD tools can use uniformly.  The
+Makefile also runs the code. (:japanese_ogre: <i>There is an
+interesting issue where the JVM does not immediately exit but hangs
+there for 30 seconds, not sure why just yet, but smells like a thread
+got launched off that has to time out Hmmmm....</i>)
+
+The resulting jar's MANIFEST.MF information is built reflecting
+specified fields in the Makefile that are written to the project.clj
+thus providing a clear accounting of how that artifact was built.
+
+``` shell
+Manifest-Version: 1.0
+Repo-Site: https://github.com/gavinmbell/playtastic
+Build-Date: Fri Sep  8 15:20:16 CEST 2017
+Last-Commit-Author: Gavin M. Bell <gavin@dontspamme.org>
+Release-Name: flatbush
+Author: Gavin M. Bell
+Built-By: gavin
+Profile: user
+Commit: fa5b3f98e0ce3d04e6d4fc02d4e2d8a4733bbcf3
+Project: playtastic
+Branch: master
+Version: 0.1.0-SNAPSHOT
+Main-Class: playtastic.core
+Last-Commit-Date: Wed Sep 6 02:11:56 2017 +0200
+Organization: Hubrick
+Created-By: Leiningen 2.7.1
+Build-Jdk: 1.8.0_66
+```
 
 ## Conclusion
 
-The code is clean, efficient and thread safe.
+:smile: The code is clean, efficient and thread safe.
 
 ### Oh Clojure...
 
-I decided to write this in Clojure because the language lends itself to easy data manipulation.  My Java 8 coding is less practiced than my Clojure coding (time was a factor)
+I decided to write this in Clojure because the language is extremely
+expressive and lends itself to easy data manipulation.  My Java 8
+coding is less practiced than my Clojure coding (time was a factor).
+The solution in Java would be similar using the Java examples in the
+[online trail](https://docs.oracle.com/javase/tutorial/collections/interfaces/collection.html).
+
+[![Clojure](https://clojure.org/images/clojure-logo-120b.png)](http://clojure.org)
