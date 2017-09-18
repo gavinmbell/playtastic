@@ -169,16 +169,15 @@ I know... I know... but... it is a
 `make` as the lowest common denominator build tool.  I use the
 Makefile to generate the clojure `project.clj` file from a simple
 [template](https://raw.githubusercontent.com/gavinmbell/playtastic/master/etc/project.clj.tmpl)
-(nothing fancy, juuuust enough - using `sed`.  This means that there
-is only one place for specifying information about the project. The
+(nothing fancy, juuuust enough - using `sed`).  This means that there
+is only one place for specifying information about the project - the Makefile. The
 `make` targets essentially delegate to
-[leiningen](https://leiningen.org/).  Also the latest `lein` script is
+[leiningen](https://leiningen.org/).  The latest `lein` script is
 in the bin directory of this project and referenced in the Makefile.
-With `make` as the base, we can support other languages' build tools
+With `make` as the base building tool, we can support other languages' build tools
 similarly to the `make` <-> `lein` interaction here.  Using `make` is
 worthwhile in the context of a polyglot environment.  It provides a
-stable <i>iterface</i> that CI/CD tools can use uniformly.  The
-Makefile also runs the code. (:japanese_ogre: <i>There is an
+stable <i>iterface</i> that CI/CD tools can use uniformly.  In this project there is a run target so that `make` also runs the code. (:japanese_ogre: <i>There is an
 interesting issue where the JVM does not immediately exit but hangs
 there for 30 seconds, not sure why just yet, but smells like a thread
 got launched off that has to time out Hmmmm....</i>)

@@ -33,7 +33,7 @@ Created <where you checked it out>/playtastic/target/playtastic-0.1.0-SNAPSHOT.j
 Created <where you checked it out>/playtastic/target/playtastic-0.1.0-SNAPSHOT-standalone.jar
 ```
 
-To run the jar using the data files from the project tree (default location set to the `resources` dir)
+To <b>run</b> the jar using the data files from the project tree (default location set to the `resources` dir)
 simply run...
 ``` shell
 %> make run
@@ -41,6 +41,12 @@ simply run...
 To specify the directory
 ``` shell
 %> DATA_DIR=<directory of data files> make run
+```
+
+Or you can run the jar directly...
+
+``` shell
+%> <where you checked it out>/playtastic/target/playtastic-0.1.0-SNAPSHOT-standalone.jar <directory of data files>
 ```
 
 The output...
